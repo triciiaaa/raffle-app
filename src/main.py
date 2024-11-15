@@ -28,6 +28,8 @@ def handle_menu_choice(raffle, choice):
     """
     if choice == '1':
         raffle.start_new_draw()
+        print("Press any key to return to the main menu.")
+        input()
     elif choice == '2':
         if raffle.is_active:
             name_and_ticket_count = input("\nEnter your name, no of tickets to purchase: ")
@@ -38,14 +40,24 @@ def handle_menu_choice(raffle, choice):
                 print(e)
 
             if name and ticket_count:
-                raffle.add_user(name, ticket_count)
+                user = raffle.add_user(name)
+                
+                initial_ticket_count = len(user.tickets)
+                user.buy_tickets(ticket_count)
+                new_ticket_count = len(user.tickets) - initial_ticket_count
+
+                raffle.increase_pot_size(new_ticket_count)
         else:
             raise InvalidOperationException("Raffle draw has not started. Please start a new draw.")
     elif choice == '3':
         if raffle.is_active:
+            print("\nRunning Raffle...")
             raffle.generate_winning_numbers()
+            print(f"Winning Ticket is {' '.join(map(str, raffle.winning_numbers))}\n")
             raffle.calculate_raffle_results()
             raffle.display_winners(raffle.raffle_results)
+            print("\nPress any key to return to the main menu.")
+            input()
             raffle.end_draw()
         else:
             raise InvalidOperationException("Raffle draw has not started. Please start a new draw.")

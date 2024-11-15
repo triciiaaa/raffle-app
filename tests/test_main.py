@@ -1,7 +1,7 @@
 import io
 import pytest 
 from contextlib import redirect_stdout
-from unittest.mock import patch, call
+from unittest.mock import patch
 from src.raffle import Raffle
 from src.main import display_menu, handle_menu_choice
 from src.exception.invalid_operation_exception import InvalidOperationException
@@ -30,10 +30,18 @@ def test_handle_menu_choice_start_new_draw():
     """Tests that the handle_menu_choice function calls start_new_draw when user selects '1'"""
     raffle = Raffle()
     
-    with patch.object(raffle, "start_new_draw") as mock_start_new_draw:
-        handle_menu_choice(raffle, '1')
+    with patch.object(raffle, "start_new_draw") as mock_start_new_draw, \
+         patch("builtins.input", return_value=""):
+        
+        output_buffer = io.StringIO()
+        with redirect_stdout(output_buffer):
+            handle_menu_choice(raffle, '1')
+        
+        printed_output = output_buffer.getvalue()
+        expected_output = "Press any key to return to the main menu.\n"
         
         mock_start_new_draw.assert_called_once()
+        assert printed_output == expected_output
 
 def test_handle_menu_choice_buy_tickets_existing_draw():
     """Tests that the handle_menu_choice function calls add_user when user selects '2'"""
@@ -45,7 +53,7 @@ def test_handle_menu_choice_buy_tickets_existing_draw():
         
         handle_menu_choice(raffle, '2')
         
-        mock_add_user.assert_called_once_with("Alice", 3)
+        mock_add_user.assert_called_once_with("Alice")
 
 def test_handle_menu_choice_buy_tickets_no_draw():
     """Tests that the handle_menu_choice function raises an exception when user selects '2' without starting a draw"""
@@ -60,10 +68,11 @@ def test_handle_menu_choice_run_raffle_existing_draw():
     raffle = Raffle()
     
     with patch.object(raffle, "is_active", return_value=True), \
-        patch.object(raffle, "generate_winning_numbers") as mock_generate_winning_numbers, \
+         patch.object(raffle, "generate_winning_numbers") as mock_generate_winning_numbers, \
          patch.object(raffle, "calculate_raffle_results") as mock_calculate_raffle_results, \
          patch.object(raffle, "display_winners") as mock_display_winners, \
-         patch.object(raffle, "end_draw") as mock_end_draw:
+         patch.object(raffle, "end_draw") as mock_end_draw, \
+         patch("builtins.input", return_value=""):
         
         handle_menu_choice(raffle, '3')
         

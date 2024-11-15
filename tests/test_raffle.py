@@ -1,4 +1,6 @@
+import io
 import pytest 
+from contextlib import redirect_stdout
 from unittest.mock import patch, call, MagicMock
 from src.raffle import Raffle
 from src.user import User
@@ -14,11 +16,14 @@ def test_raffle_initialisation():
     assert raffle.is_active is False
     assert raffle.raffle_results == {}
 
-def test_get_draw_status():
-    """Tests that the get_draw_status method returns the correct status message"""
+def test_get_draw_status_inactive():
+    """Tests that the get_draw_status method returns the correct status message when there are no active draws"""
     raffle = Raffle()
     assert raffle.get_draw_status() == "Status: Draw has not started"
     
+def test_get_draw_status_active():
+    """Tests that the get_draw_status method returns the correct status message when there is an active draw"""
+    raffle = Raffle()
     raffle.is_active = True
     raffle.pot_size = 150
     assert raffle.get_draw_status() == "Status: Draw is ongoing. Raffle pot size is $150"
@@ -26,13 +31,17 @@ def test_get_draw_status():
 def test_start_new_draw():
     """Tests that the start_new_draw method initialises a new raffle draw"""
     raffle = Raffle()
-    with patch("builtins.input", return_value=""):
-        with patch("builtins.print") as mocked_print:
-            raffle.start_new_draw()
+
+    output_buffer = io.StringIO()
+    with redirect_stdout(output_buffer):
+        raffle.start_new_draw()
     
+    printed_output = output_buffer.getvalue().strip() 
+    expected_output = "New Raffle draw has been started. Initial pot size: $100"
+
     assert raffle.is_active is True
     assert raffle.pot_size == 100
-    mocked_print.assert_any_call("\nNew Raffle draw has been started. Initial pot size: $100")
+    assert printed_output == expected_output
     
 def test_get_existing_user_by_name():
     """Tests that the get_user_by_name method returns the correct user instance"""
@@ -96,25 +105,28 @@ def test_verify_buy_tickets_invalid_input_negative_ticket_count():
 def test_add_user():
     """Tests that the add_user method correctly adds a new user to the raffle"""
     raffle = Raffle()
-
-    with patch("builtins.input", return_value=""):
-        raffle.add_user("Alice", 3)
+    raffle.add_user("Alice")
 
     assert len(raffle.users) == 1
     assert raffle.users[0].name == "Alice"
-    assert raffle.pot_size == 15 
-    assert len(raffle.users[0].tickets) == 3 
+
+def test_increase_pot_size():
+    """Tests that the increase_pot_size method correctly increases the pot size based on the number of tickets purchased"""
+    raffle = Raffle()
+    raffle.pot_size = 100
+    raffle.increase_pot_size(3)
+    
+    assert raffle.pot_size == 115
 
 def test_generate_winning_numbers():
     """Tests that the generate_winning_numbers method sets the winning numbers correctly"""
     raffle = Raffle()
+    raffle.generate_winning_numbers()
     
-    with patch("random.sample", return_value=[1, 2, 3, 4, 5]):
-        with patch("builtins.print") as mocked_print:
-            raffle.generate_winning_numbers()
-    
-    assert raffle.winning_numbers == [1, 2, 3, 4, 5]
-    assert mocked_print.call_args_list[-1] == (("Winning Ticket is 1 2 3 4 5",), {"end": "\n"})
+    assert len(raffle.winning_numbers) == 5, "Winning numbers must contain exactly 5 numbers."
+    assert len(set(raffle.winning_numbers)) == 5, "Winning numbers must be unique."
+    assert all(1 <= num <= 15 for num in raffle.winning_numbers), "Winning numbers must be between 1 and 15."
+    assert raffle.winning_numbers == sorted(raffle.winning_numbers), "Winning numbers must be sorted."
 
 def test_calculate_raffle_results_for_single_win():
     """Tests that the calculate_raffle_results method correctly calculates the raffle results for a single winner"""
@@ -126,7 +138,6 @@ def test_calculate_raffle_results_for_single_win():
     
     raffle.users.append(mock_user)
     raffle.pot_size = 1000
-    
     raffle.calculate_raffle_results()
     
     assert "Group 3" in raffle.raffle_results
@@ -171,21 +182,23 @@ def test_display_winners():
         "Group 5 (Jackpot)": {}
     }
 
-    expected_calls = [
-        call("\nGroup 2 Winners:"),
-        call("Alice with 2 winning ticket(s) - $50.0"),
-        call("\nGroup 3 Winners:"),
-        call("Bob with 1 winning ticket(s) - $75.0"),
-        call("\nGroup 5 (Jackpot) Winners:"),
-        call("Nil"),
-        call("\nPress any key to return to the main menu.")
-    ]
+    expected_output = (
+        "\nGroup 2 Winners:\n"
+        "Alice with 2 winning ticket(s) - $50.0\n"
+        "\nGroup 3 Winners:\n"
+        "Bob with 1 winning ticket(s) - $75.0\n"
+        "\nGroup 5 (Jackpot) Winners:\n"
+        "Nil\n"
+    )
 
-    with patch("builtins.print") as mock_print, patch("builtins.input", return_value=""):
+    output_buffer = io.StringIO()
+    with redirect_stdout(output_buffer):
         raffle.display_winners(rewards)
 
-    mock_print.assert_has_calls(expected_calls, any_order=False)
+    printed_output = output_buffer.getvalue()
 
+    assert printed_output == expected_output
+    
 def test_calculate_total_winnings():
     """Tests that the calculate_total_winnings method correctly calculates the total winnings from the raffle results"""
     raffle = Raffle()

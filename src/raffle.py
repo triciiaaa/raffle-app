@@ -38,8 +38,6 @@ class Raffle:
         self.is_active = True
         self.pot_size += 100
         print(f"\nNew Raffle draw has been started. Initial pot size: ${self.pot_size}")
-        print("Press any key to return to the main menu.")
-        return input()
 
     def get_user_by_name(self, name):
         """
@@ -70,13 +68,15 @@ class Raffle:
 
         return name.strip(), int(ticket_count.strip())
 
-    def add_user(self, name, ticket_count):
+    def add_user(self, name):
         """
         Adds a user to the raffle and allow them to purchase tickets.
 
         Parameters:
             name (str): The user's name.
-            ticket_count (int): The number of tickets the user wishes to buy.
+            
+        Returns:
+            User: The user instance
         """
         user = self.get_user_by_name(name)
         
@@ -84,21 +84,18 @@ class Raffle:
             user = User(name)
             self.users.append(user)
 
-        initial_ticket_count = len(user.tickets)
-        user.buy_tickets(ticket_count)
-        new_ticket_count = len(user.tickets) - initial_ticket_count
+        return user 
 
-        self.pot_size += new_ticket_count * 5 
+    def increase_pot_size(self, ticket_count):
+        self.pot_size += ticket_count * 5 
 
     def generate_winning_numbers(self):
         """
         Generates a set of five unique winning numbers between 1 and 15,
         sort them, and display the result.
         """
-        print("\nRunning Raffle...")
         self.winning_numbers = sorted(random.sample(range(1, 16), 5))
-        print(f"Winning Ticket is {' '.join(map(str, self.winning_numbers))}", end="\n")
-
+        
     def calculate_raffle_results(self):
         """
         Calculates the results of the raffle by determining winning tickets
@@ -156,9 +153,6 @@ class Raffle:
                     ticket_count = data['count']
                     total_reward = round(data['total_reward'], 2)
                     print(f"{user} with {ticket_count} winning ticket(s) - ${total_reward}")
-
-        print("\nPress any key to return to the main menu.")
-        return input()
     
     def calculate_total_winnings(self, rewards):
         """
