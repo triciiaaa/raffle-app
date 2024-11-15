@@ -105,9 +105,11 @@ raffle-app
   ```bash
   pytest --cov=src --cov-report=html
   ```
-  **Note**: After running this command, open htmlcov/index.html in a browser to view the coverage report. As of the last report, the existing code coverage is approximately **94%**. Testing `main()` is omitted to avoid redundancy, as its functionality is already covered through unit tests on `display_menu()` and `handle_menu_choice()`.
+  **Note**: After running this command, open htmlcov/index.html in a browser to view the coverage report. As of the last report, the existing code coverage is approximately **93%**. Testing `main()` is omitted to avoid redundancy, as its functionality is already covered through unit tests on `display_menu()` and `handle_menu_choice()`.
 
 ## Assumptions
+
+- **Starting Draw**: When a raffle draw is currently active, a new draw cannot be started.
 
 - **Ticket Purchase Limitations**: Each user can buy multiple tickets in a single purchase but is limited to a total maximum of 5 tickets.
 

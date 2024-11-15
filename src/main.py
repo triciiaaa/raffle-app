@@ -41,6 +41,7 @@ def handle_menu_choice(raffle, choice):
                 name, ticket_count = raffle.verify_buy_tickets_input(name_and_ticket_count)
             except InvalidInputException as e:
                 print(e)
+                return
 
             if name and ticket_count:
                 user = raffle.add_user(name)
@@ -83,6 +84,7 @@ def main():
             handle_menu_choice(raffle, choice)
         except (InvalidOperationException, InvalidInputException) as e:
             print(e)
+            continue
 
 if __name__ == "__main__":
     main()
