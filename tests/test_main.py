@@ -33,22 +33,34 @@ def test_handle_menu_choice_start_new_draw():
         
         mock_start_new_draw.assert_called_once()
 
-def test_handle_menu_choice_buy_tickets():
+def test_handle_menu_choice_buy_tickets_existing_draw():
     """Tests that the handle_menu_choice function calls add_user when user selects '2'"""
     raffle = Raffle()
     
-    with patch.object(raffle, "add_user") as mock_add_user, \
+    with patch.object(raffle, "is_active", return_value=True), \
+         patch.object(raffle, "add_user") as mock_add_user, \
          patch("builtins.input", return_value="Alice, 3"):
         
         handle_menu_choice(raffle, '2')
         
         mock_add_user.assert_called_once_with("Alice", 3)
 
-def test_handle_menu_choice_run_raffle():
+def test_handle_menu_choice_buy_tickets_no_draw():
+    raffle = Raffle()
+
+    with patch.object(raffle, "add_user") as mock_add_user, \
+         patch("builtins.input", return_value="Alice, 3"), \
+         patch("builtins.print") as mock_print:
+        handle_menu_choice(raffle, '2')
+        
+        mock_print.assert_called_once_with("Raffle draw has not started. Please start a new draw.")
+
+def test_handle_menu_choice_run_raffle_existing_draw():
     """Tests that the handle_menu_choice function calls the necessary methods when user selects '3'"""
     raffle = Raffle()
     
-    with patch.object(raffle, "generate_winning_numbers") as mock_generate_winning_numbers, \
+    with patch.object(raffle, "is_active", return_value=True), \
+        patch.object(raffle, "generate_winning_numbers") as mock_generate_winning_numbers, \
          patch.object(raffle, "calculate_raffle_results") as mock_calculate_raffle_results, \
          patch.object(raffle, "display_winners") as mock_display_winners, \
          patch.object(raffle, "end_draw") as mock_end_draw:
@@ -59,6 +71,14 @@ def test_handle_menu_choice_run_raffle():
         mock_calculate_raffle_results.assert_called_once()
         mock_display_winners.assert_called_once_with(raffle.raffle_results)
         mock_end_draw.assert_called_once()
+
+def test_handle_menu_choice_run_raffle_no_draw():
+    raffle = Raffle()
+
+    with patch("builtins.print") as mock_print:
+        handle_menu_choice(raffle, '3')
+        
+        mock_print.assert_called_once_with("Raffle draw has not started. Please start a new draw.")
 
 def test_handle_menu_choice_invalid_option():
     """Tests that the handle_menu_choice function prints an error message for invalid choices"""

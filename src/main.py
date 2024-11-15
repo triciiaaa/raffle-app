@@ -28,16 +28,22 @@ def handle_menu_choice(raffle, choice):
     if choice == '1':
         raffle.start_new_draw()
     elif choice == '2':
-        name_and_ticket_count = input("\nEnter your name, no of tickets to purchase: ")
-        name, ticket_count = name_and_ticket_count.split(",")
-        name = name.strip()
-        ticket_count = int(ticket_count.strip())
-        raffle.add_user(name, ticket_count)
+        if raffle.is_active:
+            name_and_ticket_count = input("\nEnter your name, no of tickets to purchase: ")
+            name, ticket_count = raffle.verify_buy_tickets_input(name_and_ticket_count)
+
+            if name and ticket_count:
+                raffle.add_user(name, ticket_count)
+        else:
+            print("Raffle draw has not started. Please start a new draw.")
     elif choice == '3':
-        raffle.generate_winning_numbers()
-        raffle.calculate_raffle_results()
-        raffle.display_winners(raffle.raffle_results)
-        raffle.end_draw()
+        if raffle.is_active:
+            raffle.generate_winning_numbers()
+            raffle.calculate_raffle_results()
+            raffle.display_winners(raffle.raffle_results)
+            raffle.end_draw()
+        else:
+            print("Raffle draw has not started. Please start a new draw.")
     else:
         print("Invalid choice, please select again.")
 

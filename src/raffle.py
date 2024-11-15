@@ -55,6 +55,23 @@ class Raffle:
                 return user
         return None
 
+    def verify_buy_tickets_input(self, name_and_ticket_count):
+        if ',' not in name_and_ticket_count or name_and_ticket_count.count(',') != 1:
+            print("Invalid input. Input must contain a single comma separating the name and ticket count.")
+            return None, None
+
+        name, ticket_count = name_and_ticket_count.split(',', 1)
+
+        if not name.strip():
+            print("Invalid input. Name cannot be empty.")
+            return None, None
+
+        if not ticket_count.strip().isdigit() or int(ticket_count.strip()) <= 0:
+            print("Invalid input. Ticket count must be a positive integer.")
+            return None, None
+
+        return name.strip(), int(ticket_count.strip())
+
     def add_user(self, name, ticket_count):
         """
         Adds a user to the raffle and allow them to purchase tickets.

@@ -2,11 +2,10 @@ from unittest.mock import patch, call, MagicMock
 from src.raffle import Raffle
 from src.user import User
 
-def test_raffle_initialization():
+def test_raffle_initialisation():
     """Tests that the Raffle class is initialised correctly"""
     raffle = Raffle()
     
-    # Verify default values
     assert raffle.pot_size == 0
     assert raffle.users == []
     assert raffle.winning_numbers == []
@@ -44,9 +43,9 @@ def test_get_existing_user_by_name():
     raffle.users.extend([user1, user2, user3])
     result = raffle.get_user_by_name("Bob")
     
-    assert result is not None  # Ensure that a user is found
-    assert result.name == "Bob"  # Check that the correct user is returned
-    assert result == user2  # Verify that the returned user is the expected instance
+    assert result is not None
+    assert result.name == "Bob"  
+    assert result == user2  
 
 def test_get_non_existing_user_by_name():
     """Tests that the get_user_by_name method returns None when the user does not exist"""
@@ -55,35 +54,76 @@ def test_get_non_existing_user_by_name():
     raffle.users.append(User("Alice"))
     result = raffle.get_user_by_name("Bob")
     
-    assert result is None  # Expect None when the user does not exist
+    assert result is None 
+
+def test_verify_buy_tickets_valid_input():
+    """Tests that the verify_buy_tickets method correctly validates user input for buying tickets"""
+    raffle = Raffle()
+    
+    result = raffle.verify_buy_tickets_input("Alice, 3")
+    assert result == ("Alice", 3)
+
+def test_verify_buy_tickets_invalid_input_single_detail():
+    """Tests that the verify_buy_tickets method correctly handles invalid user input for buying tickets"""
+    raffle = Raffle()
+    
+    with patch("builtins.print") as mocked_print:
+        result = raffle.verify_buy_tickets_input("Alice")
+    
+    assert result == (None, None)
+    mocked_print.assert_called_once_with("Invalid input. Input must contain a single comma separating the name and ticket count.")
+
+def test_verify_buy_tickets_invalid_input_missing_name():
+    """Tests that the verify_buy_tickets method correctly handles invalid user input for buying tickets"""
+    raffle = Raffle()
+
+    with patch("builtins.print") as mocked_print:
+        result = raffle.verify_buy_tickets_input(", 3")
+    
+    assert result == (None, None)
+    mocked_print.assert_called_once_with("Invalid input. Name cannot be empty.")
+
+def test_verify_buy_tickets_invalid_input_missing_ticket_count():
+    """Tests that the verify_buy_tickets method correctly handles invalid user input for buying tickets"""
+    raffle = Raffle()
+    
+    with patch("builtins.print") as mocked_print:
+        result = raffle.verify_buy_tickets_input("Alice,")
+    
+    assert result == (None, None)
+    mocked_print.assert_called_once_with("Invalid input. Ticket count must be a positive integer.")
+
+def test_verify_buy_tickets_invalid_input_negative_ticket_count():
+    """Tests that the verify_buy_tickets method correctly handles invalid user input for buying tickets"""
+    raffle = Raffle()
+    
+    with patch("builtins.print") as mocked_print:
+        result = raffle.verify_buy_tickets_input("Alice, -3")
+
+    assert result == (None, None)
+    mocked_print.assert_called_once_with("Invalid input. Ticket count must be a positive integer.")
 
 def test_add_user():
     """Tests that the add_user method correctly adds a new user to the raffle"""
     raffle = Raffle()
 
-    # Mock the input call in buy_tickets
     with patch("builtins.input", return_value=""):
         raffle.add_user("Alice", 3)
 
-    # Verify user addition and pot size calculation
     assert len(raffle.users) == 1
     assert raffle.users[0].name == "Alice"
-    assert raffle.pot_size == 15  # 3 tickets * $5 per ticket
-    assert len(raffle.users[0].tickets) == 3  # Alice should have 3 tickets
+    assert raffle.pot_size == 15 
+    assert len(raffle.users[0].tickets) == 3 
 
 def test_generate_winning_numbers():
     """Tests that the generate_winning_numbers method sets the winning numbers correctly"""
     raffle = Raffle()
     
-    # Patch random.sample to return a known set of winning numbers
     with patch("random.sample", return_value=[1, 2, 3, 4, 5]):
         with patch("builtins.print") as mocked_print:
             raffle.generate_winning_numbers()
     
-    # Verify that winning numbers were set correctly
     assert raffle.winning_numbers == [1, 2, 3, 4, 5]
-    
-    # Check that the last print call matches the expected output format
     assert mocked_print.call_args_list[-1] == (("Winning Ticket is 1 2 3 4 5",), {"end": "\n"})
 
 def test_calculate_raffle_results_for_single_win():
@@ -99,41 +139,31 @@ def test_calculate_raffle_results_for_single_win():
     
     raffle.calculate_raffle_results()
     
-    # Check if the correct prize group was populated
     assert "Group 3" in raffle.raffle_results
     assert "Alice" in raffle.raffle_results["Group 3"]
-    assert raffle.raffle_results["Group 3"]["Alice"]["count"] == 1  # Alice has 1 matching ticket
-    assert raffle.raffle_results["Group 3"]["Alice"]["total_reward"] > 0  # Ensure reward was calculated
+    assert raffle.raffle_results["Group 3"]["Alice"]["count"] == 1 
+    assert raffle.raffle_results["Group 3"]["Alice"]["total_reward"] > 0
 
 def test_calculate_raffle_results_for_multiple_wins_same_group():
     """Tests that the calculate_raffle_results method correctly calculates the raffle results for multiple winners in the same prize group"""
     raffle = Raffle()
     raffle.pot_size = 1000
 
-    # Create a single user with multiple tickets in the same prize group
     user = MagicMock(spec=User)
     user.name = "Alice"
     user.tickets = [MagicMock(), MagicMock()]
 
-    # Both tickets match 2 numbers, so they should both fall into Group 2
     user.tickets[0].count_matching_numbers = MagicMock(return_value=2)
     user.tickets[1].count_matching_numbers = MagicMock(return_value=2)
 
-    # Add the user to the raffle
-    raffle.users.append(user)
-    
-    # Execute the raffle result calculation
+    raffle.users.append(user)    
     raffle.calculate_raffle_results()
     
-    # Check Group 2 for Alice
     assert "Group 2" in raffle.raffle_results
     assert "Alice" in raffle.raffle_results["Group 2"]
     
-    # Alice should have 2 winning tickets in Group 2
     assert raffle.raffle_results["Group 2"]["Alice"]["count"] == 2
     
-    # Check that the total reward for Alice in Group 2 is greater than 0
-    # and that it accounts for both winning tickets
     total_reward = raffle.raffle_results["Group 2"]["Alice"]["total_reward"]
     assert total_reward > 0
 
@@ -151,7 +181,6 @@ def test_display_winners():
         "Group 5 (Jackpot)": {}
     }
 
-    # Expected print output sequence using call(...) for each print statement
     expected_calls = [
         call("\nGroup 2 Winners:"),
         call("Alice with 2 winning ticket(s) - $50.0"),
@@ -162,11 +191,9 @@ def test_display_winners():
         call("\nPress any key to return to the main menu.")
     ]
 
-    # Patch both print and input to capture output and prevent hanging
     with patch("builtins.print") as mock_print, patch("builtins.input", return_value=""):
         raffle.display_winners(rewards)
 
-    # Verify that the print calls match expected output
     mock_print.assert_has_calls(expected_calls, any_order=False)
 
 def test_calculate_total_winnings():
@@ -206,5 +233,5 @@ def test_end_draw():
     with patch.object(raffle, 'reset_draw') as mock_reset:
         raffle.end_draw()
 
-    assert raffle.pot_size == 875  # Pot size should be reduced by total winnings
+    assert raffle.pot_size == 875  
     mock_reset.assert_called_once()
