@@ -55,6 +55,15 @@ class Raffle:
         return None
 
     def verify_buy_tickets_input(self, name_and_ticket_count):
+        """
+        Verifies the input for buying tickets by checking if the input is valid
+        
+        Parameters:
+            name_and_ticket_count (str): The input string containing the name and ticket count.
+
+        Returns:
+            tuple: A tuple containing the name and ticket count if valid.
+        """
         if ',' not in name_and_ticket_count or name_and_ticket_count.count(',') != 1:
             raise InvalidInputException("Invalid input. Input must contain a single comma separating the name and ticket count.")
 
@@ -87,6 +96,12 @@ class Raffle:
         return user 
 
     def increase_pot_size(self, ticket_count):
+        """
+        Increases the pot size by adding the total value of tickets purchased.
+
+        Parameters:
+            ticket_count (int): The number of tickets purchased.
+        """
         self.pot_size += ticket_count * 5 
 
     def generate_winning_numbers(self):

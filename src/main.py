@@ -8,9 +8,6 @@ def display_menu(raffle):
 
     Parameters:
         raffle (Raffle): The raffle instance to retrieve current draw status.
-
-    Returns:
-        str: The option selected by the user.
     """
     print("\nWelcome to My Raffle App")
     print(raffle.get_draw_status())  
