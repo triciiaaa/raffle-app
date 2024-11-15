@@ -17,7 +17,6 @@ def display_menu(raffle):
     print("\n[1] Start a New Draw")
     print("[2] Buy Tickets")
     print("[3] Run Raffle")
-    return input("\nSelect an option: ")
 
 def handle_menu_choice(raffle, choice):
     """
@@ -59,7 +58,9 @@ def main():
     """
     raffle = Raffle()
     while True:
-        choice = display_menu(raffle)
+        display_menu(raffle)
+        choice = input("\nSelect an option: ")
+        
         try:
             handle_menu_choice(raffle, choice)
         except (InvalidOperationException, InvalidInputException) as e:

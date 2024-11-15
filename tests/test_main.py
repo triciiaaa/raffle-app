@@ -1,4 +1,6 @@
+import io
 import pytest 
+from contextlib import redirect_stdout
 from unittest.mock import patch, call
 from src.raffle import Raffle
 from src.main import display_menu, handle_menu_choice
@@ -8,21 +10,21 @@ from src.exception.invalid_input_exception import InvalidInputException
 def test_display_menu():
     """Tests that the display_menu function prints the menu options correctly"""
     raffle = Raffle()
-    raffle.get_draw_status = lambda: "Status: Draw not started" 
+    output_buffer = io.StringIO()
+    with redirect_stdout(output_buffer):
+        display_menu(raffle)
     
-    with patch("builtins.input", return_value="1"), patch("builtins.print") as mock_print:
-        choice = display_menu(raffle)
+    printed_output = output_buffer.getvalue()
     
-    expected_calls = [
-        call("\nWelcome to My Raffle App"),
-        call("Status: Draw not started"),
-        call("\n[1] Start a New Draw"),
-        call("[2] Buy Tickets"),
-        call("[3] Run Raffle")
-    ]
-    mock_print.assert_has_calls(expected_calls)
-
-    assert choice == "1"
+    expected_output = (
+        "\nWelcome to My Raffle App\n"
+        "Status: Draw has not started\n"
+        "\n[1] Start a New Draw\n"
+        "[2] Buy Tickets\n"
+        "[3] Run Raffle\n"
+    )
+    
+    assert printed_output == expected_output
 
 def test_handle_menu_choice_start_new_draw():
     """Tests that the handle_menu_choice function calls start_new_draw when user selects '1'"""
@@ -46,6 +48,7 @@ def test_handle_menu_choice_buy_tickets_existing_draw():
         mock_add_user.assert_called_once_with("Alice", 3)
 
 def test_handle_menu_choice_buy_tickets_no_draw():
+    """Tests that the handle_menu_choice function raises an exception when user selects '2' without starting a draw"""
     raffle = Raffle()
 
     with patch("builtins.input", return_value="Alice, 3"):
@@ -70,6 +73,7 @@ def test_handle_menu_choice_run_raffle_existing_draw():
         mock_end_draw.assert_called_once()
 
 def test_handle_menu_choice_run_raffle_no_draw():
+    """Tests that the handle_menu_choice function raises an exception when user selects '3' without starting a draw"""
     raffle = Raffle()
 
     with pytest.raises(InvalidOperationException, match="Raffle draw has not started. Please start a new draw."):
