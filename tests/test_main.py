@@ -1,17 +1,18 @@
+import pytest 
 from unittest.mock import patch, call
 from src.raffle import Raffle
 from src.main import display_menu, handle_menu_choice
+from src.exception.invalid_operation_exception import InvalidOperationException
+from src.exception.invalid_input_exception import InvalidInputException
 
 def test_display_menu():
     """Tests that the display_menu function prints the menu options correctly"""
     raffle = Raffle()
-    raffle.get_draw_status = lambda: "Status: Draw not started"  # Mock get_draw_status output
+    raffle.get_draw_status = lambda: "Status: Draw not started" 
     
-    # Simulate user input '1' to select "Start a New Draw"
     with patch("builtins.input", return_value="1"), patch("builtins.print") as mock_print:
         choice = display_menu(raffle)
     
-    # Verify that menu output was printed correctly
     expected_calls = [
         call("\nWelcome to My Raffle App"),
         call("Status: Draw not started"),
@@ -21,7 +22,6 @@ def test_display_menu():
     ]
     mock_print.assert_has_calls(expected_calls)
 
-    # Verify that the returned choice is '1'
     assert choice == "1"
 
 def test_handle_menu_choice_start_new_draw():
@@ -48,12 +48,9 @@ def test_handle_menu_choice_buy_tickets_existing_draw():
 def test_handle_menu_choice_buy_tickets_no_draw():
     raffle = Raffle()
 
-    with patch.object(raffle, "add_user") as mock_add_user, \
-         patch("builtins.input", return_value="Alice, 3"), \
-         patch("builtins.print") as mock_print:
-        handle_menu_choice(raffle, '2')
-        
-        mock_print.assert_called_once_with("Raffle draw has not started. Please start a new draw.")
+    with patch("builtins.input", return_value="Alice, 3"):
+        with pytest.raises(InvalidOperationException, match="Raffle draw has not started. Please start a new draw."):
+            handle_menu_choice(raffle, '2')
 
 def test_handle_menu_choice_run_raffle_existing_draw():
     """Tests that the handle_menu_choice function calls the necessary methods when user selects '3'"""
@@ -75,16 +72,12 @@ def test_handle_menu_choice_run_raffle_existing_draw():
 def test_handle_menu_choice_run_raffle_no_draw():
     raffle = Raffle()
 
-    with patch("builtins.print") as mock_print:
+    with pytest.raises(InvalidOperationException, match="Raffle draw has not started. Please start a new draw."):
         handle_menu_choice(raffle, '3')
-        
-        mock_print.assert_called_once_with("Raffle draw has not started. Please start a new draw.")
 
 def test_handle_menu_choice_invalid_option():
     """Tests that the handle_menu_choice function prints an error message for invalid choices"""
     raffle = Raffle()
     
-    with patch("builtins.print") as mock_print:
+    with pytest.raises(InvalidInputException, match="Invalid choice, please select again."):
         handle_menu_choice(raffle, '4')
-        
-        mock_print.assert_called_once_with("Invalid choice, please select again.")

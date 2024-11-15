@@ -1,6 +1,7 @@
 import random
 from src.user import User
 from src.prize_group import PrizeGroup
+from src.exception.invalid_input_exception import InvalidInputException
 
 class Raffle:
     """
@@ -57,18 +58,15 @@ class Raffle:
 
     def verify_buy_tickets_input(self, name_and_ticket_count):
         if ',' not in name_and_ticket_count or name_and_ticket_count.count(',') != 1:
-            print("Invalid input. Input must contain a single comma separating the name and ticket count.")
-            return None, None
+            raise InvalidInputException("Invalid input. Input must contain a single comma separating the name and ticket count.")
 
         name, ticket_count = name_and_ticket_count.split(',', 1)
 
         if not name.strip():
-            print("Invalid input. Name cannot be empty.")
-            return None, None
+            raise InvalidInputException("Invalid input. Name cannot be empty.")
 
         if not ticket_count.strip().isdigit() or int(ticket_count.strip()) <= 0:
-            print("Invalid input. Ticket count must be a positive integer.")
-            return None, None
+            raise InvalidInputException("Invalid input. Ticket count must be a positive integer.")
 
         return name.strip(), int(ticket_count.strip())
 

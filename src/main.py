@@ -1,4 +1,6 @@
 from src.raffle import Raffle
+from src.exception.invalid_operation_exception import InvalidOperationException
+from src.exception.invalid_input_exception import InvalidInputException
 
 def display_menu(raffle):
     """
@@ -30,12 +32,16 @@ def handle_menu_choice(raffle, choice):
     elif choice == '2':
         if raffle.is_active:
             name_and_ticket_count = input("\nEnter your name, no of tickets to purchase: ")
-            name, ticket_count = raffle.verify_buy_tickets_input(name_and_ticket_count)
+
+            try:
+                name, ticket_count = raffle.verify_buy_tickets_input(name_and_ticket_count)
+            except InvalidInputException as e:
+                print(e)
 
             if name and ticket_count:
                 raffle.add_user(name, ticket_count)
         else:
-            print("Raffle draw has not started. Please start a new draw.")
+            raise InvalidOperationException("Raffle draw has not started. Please start a new draw.")
     elif choice == '3':
         if raffle.is_active:
             raffle.generate_winning_numbers()
@@ -43,10 +49,10 @@ def handle_menu_choice(raffle, choice):
             raffle.display_winners(raffle.raffle_results)
             raffle.end_draw()
         else:
-            print("Raffle draw has not started. Please start a new draw.")
+            raise InvalidOperationException("Raffle draw has not started. Please start a new draw.")
     else:
-        print("Invalid choice, please select again.")
-
+        raise InvalidInputException("Invalid choice, please select again.")
+    
 def main():
     """
     Main function to control the raffle application flow.
@@ -54,7 +60,10 @@ def main():
     raffle = Raffle()
     while True:
         choice = display_menu(raffle)
-        handle_menu_choice(raffle, choice)
+        try:
+            handle_menu_choice(raffle, choice)
+        except (InvalidOperationException, InvalidInputException) as e:
+            print(e)
 
 if __name__ == "__main__":
     main()

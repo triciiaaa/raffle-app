@@ -1,6 +1,8 @@
+import pytest 
 from unittest.mock import patch, call, MagicMock
 from src.raffle import Raffle
 from src.user import User
+from src.exception.invalid_input_exception import InvalidInputException
 
 def test_raffle_initialisation():
     """Tests that the Raffle class is initialised correctly"""
@@ -67,41 +69,29 @@ def test_verify_buy_tickets_invalid_input_single_detail():
     """Tests that the verify_buy_tickets method correctly handles invalid user input for buying tickets"""
     raffle = Raffle()
     
-    with patch("builtins.print") as mocked_print:
+    with pytest.raises(InvalidInputException, match="Invalid input. Input must contain a single comma separating the name and ticket count."):
         result = raffle.verify_buy_tickets_input("Alice")
-    
-    assert result == (None, None)
-    mocked_print.assert_called_once_with("Invalid input. Input must contain a single comma separating the name and ticket count.")
 
 def test_verify_buy_tickets_invalid_input_missing_name():
     """Tests that the verify_buy_tickets method correctly handles invalid user input for buying tickets"""
     raffle = Raffle()
 
-    with patch("builtins.print") as mocked_print:
+    with pytest.raises(InvalidInputException, match="Invalid input. Name cannot be empty."):
         result = raffle.verify_buy_tickets_input(", 3")
-    
-    assert result == (None, None)
-    mocked_print.assert_called_once_with("Invalid input. Name cannot be empty.")
 
 def test_verify_buy_tickets_invalid_input_missing_ticket_count():
     """Tests that the verify_buy_tickets method correctly handles invalid user input for buying tickets"""
     raffle = Raffle()
     
-    with patch("builtins.print") as mocked_print:
+    with pytest.raises(InvalidInputException, match="Invalid input. Ticket count must be a positive integer."):
         result = raffle.verify_buy_tickets_input("Alice,")
-    
-    assert result == (None, None)
-    mocked_print.assert_called_once_with("Invalid input. Ticket count must be a positive integer.")
 
 def test_verify_buy_tickets_invalid_input_negative_ticket_count():
     """Tests that the verify_buy_tickets method correctly handles invalid user input for buying tickets"""
     raffle = Raffle()
     
-    with patch("builtins.print") as mocked_print:
+    with pytest.raises(InvalidInputException, match="Invalid input. Ticket count must be a positive integer."):
         result = raffle.verify_buy_tickets_input("Alice, -3")
-
-    assert result == (None, None)
-    mocked_print.assert_called_once_with("Invalid input. Ticket count must be a positive integer.")
 
 def test_add_user():
     """Tests that the add_user method correctly adds a new user to the raffle"""

@@ -105,7 +105,7 @@ raffle-app
   ```bash
   pytest --cov=src --cov-report=html
   ```
-  **Note**: After running this command, open htmlcov/index.html in a browser to view the coverage report. As of the last report, the existing code coverage is approximately **97%**. Testing `main()` is omitted to avoid redundancy, as its functionality is already covered through unit tests on `display_menu()` and `handle_menu_choice()`.
+  **Note**: After running this command, open htmlcov/index.html in a browser to view the coverage report. As of the last report, the existing code coverage is approximately **94%**. Testing `main()` is omitted to avoid redundancy, as its functionality is already covered through unit tests on `display_menu()` and `handle_menu_choice()`.
 
 ## Assumptions
 
