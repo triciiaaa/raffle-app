@@ -43,6 +43,3 @@ class User:
             ticket = Ticket()
             self.tickets.append(ticket)
             print(f"Ticket {i + 1}: {ticket.display_numbers()}")
-
-        print("\nPress any key to return to the main menu.")
-        return input()

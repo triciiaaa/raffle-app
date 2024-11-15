@@ -44,8 +44,11 @@ def handle_menu_choice(raffle, choice):
                 
                 initial_ticket_count = len(user.tickets)
                 user.buy_tickets(ticket_count)
-                new_ticket_count = len(user.tickets) - initial_ticket_count
 
+                print("\nPress any key to return to the main menu.")
+                input()
+                
+                new_ticket_count = len(user.tickets) - initial_ticket_count
                 raffle.increase_pot_size(new_ticket_count)
         else:
             raise InvalidOperationException("Raffle draw has not started. Please start a new draw.")
