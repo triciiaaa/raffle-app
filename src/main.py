@@ -27,9 +27,12 @@ def handle_menu_choice(raffle, choice):
         choice (str): The option selected by the user.
     """
     if choice == '1':
-        raffle.start_new_draw()
-        print("Press any key to return to the main menu.")
-        input()
+        if raffle.is_active:
+            raise InvalidOperationException("Raffle draw is already active. Please end the current draw.")
+        else:
+            raffle.start_new_draw()
+            print("Press any key to return to the main menu.")
+            input()
     elif choice == '2':
         if raffle.is_active:
             name_and_ticket_count = input("\nEnter your name, no of tickets to purchase: ")

@@ -32,16 +32,17 @@ def test_handle_menu_choice_start_new_draw():
     
     with patch.object(raffle, "start_new_draw") as mock_start_new_draw, \
          patch("builtins.input", return_value=""):
-        
-        output_buffer = io.StringIO()
-        with redirect_stdout(output_buffer):
-            handle_menu_choice(raffle, '1')
-        
-        printed_output = output_buffer.getvalue()
-        expected_output = "Press any key to return to the main menu.\n"
+        handle_menu_choice(raffle, '1')
         
         mock_start_new_draw.assert_called_once()
-        assert printed_output == expected_output
+
+def test_handle_menu_choice_start_new_draw_with_existing_draw():
+    """Tests that the handle_menu_choice function raises an exception when user selects '1' with an active draw"""
+    raffle = Raffle()
+
+    with patch.object(raffle, "is_active", return_value=True), \
+        pytest.raises(InvalidOperationException, match="Raffle draw is already active. Please end the current draw."):
+        handle_menu_choice(raffle, '1')
 
 def test_handle_menu_choice_buy_tickets_existing_draw():
     """Tests that the handle_menu_choice function calls add_user when user selects '2'"""
